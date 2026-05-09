@@ -6,7 +6,7 @@ export const sendOtp = ({ email, otp }) => {
     service: "gmail",
     auth: {
       user: "asadullah.theofficial@gmail.com",
-      pass: "",
+      pass: "wetlebwkvovfbynl",
     },
   });
 
