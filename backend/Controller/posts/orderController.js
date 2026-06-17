@@ -7,9 +7,16 @@ import { Product } from "./../../Models/posts/ProductsSchema.js";
 
 export const createOrder = async (req, res) => {
   const { product_id, user_id } = req.params;
-  const { paymentMethod, customerName, status, quantity } = req.body;
+  const {
+    paymentMethod,
+    customerName,
 
-  if (!quantity || !customerName) {
+    quantity,
+    phoneNumber,
+    address,
+  } = req.body;
+
+  if (!quantity || !customerName || !phoneNumber) {
     res.status(400);
     throw new Error("Enter The Fields");
   }
@@ -33,7 +40,7 @@ export const createOrder = async (req, res) => {
   const newCreateOrder = await Order.create({
     paymentMethod,
     customerName,
-    status,
+
     product_id,
     user_id,
     totalPrice,

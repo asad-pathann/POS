@@ -12,7 +12,13 @@ const ProductSchema = mongoose.Schema(
       ref: "User",
       require: true,
     },
-
+    image: {
+      type: String,
+      default: "",
+    },
+    des: {
+      type: String,
+    },
     price: {
       type: Number,
       required: [true, "Enter The price "],
@@ -28,11 +34,11 @@ const ProductSchema = mongoose.Schema(
       type: String,
     },
 
-    barcode: {
-      type: String,
-      unique: true,
-      required: true,
-    },
+    // barcode: {
+    //   type: String,
+    //   unique: true,
+    //   required: true,
+    // },
   },
   {
     timestamps: true,

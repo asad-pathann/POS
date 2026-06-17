@@ -58,11 +58,11 @@ const Otp = () => {
 
     await new Promise((resolve) => setTimeout(resolve, 1000)); // fake delay
 
-    let myotp = user?.otp;
+    // let myotp = user?.otp;
 
     if (enteredOtp === storedOtp) {
       // OTP match ho gaya
-      navigate("/product-card"); // redirect to work page
+      navigate("product_card"); // redirect to work page
     } else {
       setError("Invalid OTP. Please try again.");
       setOtp(["", "", "", "", "", ""]); // clear inputs

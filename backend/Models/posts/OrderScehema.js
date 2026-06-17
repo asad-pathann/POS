@@ -11,10 +11,18 @@ const orderSchema = mongoose.Schema(
       ref: "Product",
       required: true,
     },
+    address: {
+      type: String,
+      default: "",
+    },
     user_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
+    },
+    phoneNumber: {
+      type: Number,
+      default: null,
     },
 
     totalPrice: {
@@ -32,9 +40,6 @@ const orderSchema = mongoose.Schema(
     customerName: {
       type: String,
       required: true,
-    },
-    status: {
-      type: String,
     },
   },
   {

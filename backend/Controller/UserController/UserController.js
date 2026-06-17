@@ -20,12 +20,12 @@ export const registerUser = async (req, res) => {
 
   const hashPassword = await bcrypt.hash(password, 10);
 
-  let otp = otpGenerator.generate(6, {
-    digits: true,
-    upperCaseAlphabets: false,
-    lowerCaseAlphabets: false,
-    specialChars: false,
-  });
+  // let otp = otpGenerator.generate(6, {
+  //   digits: true,
+  //   upperCaseAlphabets: false,
+  //   lowerCaseAlphabets: false,
+  //   specialChars: false,
+  // });
 
   const newUser = await User.create({
     f_name,
@@ -33,10 +33,10 @@ export const registerUser = async (req, res) => {
     email,
     password: hashPassword,
     role,
-    otp,
+    // otp,
   });
 
-  sendOtp({ email, otp });
+  // sendOtp({ email, otp });
 
   setTimeout(async () => {
     let user = await User.findOne({

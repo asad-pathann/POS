@@ -5,26 +5,37 @@ import "./globals.css";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
-import Otp from "./pages/Otp";
+// import Otp from "./pages/Otp";
 import Home from "./pages/Home";
-import POSDashboard from "./pages/PosDishbord";
 import SellProducts from "./pages/SellProducts";
 import toast, { Toaster } from "react-hot-toast";
 import SecoundHomePage from "./pages/SecoundHomePage";
+import Dashbord from "./pages/Dashbord";
+import ProductCard from "./pages/ProductCard";
+import OrderSection from "./pages/OrderSection";
 
 const app = () => {
   return (
     <>
       <Router>
         <Toaster />
+
         <Routes>
           <Route path="/" element={<Home />} />
+
           <Route path="/register" element={<Register />} />
+
           <Route path="/login" element={<Login />} />
-          <Route path="/otp" element={<Otp />} />
-          <Route path="/dishbord" element={<POSDashboard />} />
+
+          {/* <Route path="/otp" element={<Otp />} /> */}
+
           <Route path="/product" element={<SellProducts />} />
+
           <Route path="/product-card" element={<SecoundHomePage />} />
+
+          <Route path="/dashbord" element={<Dashbord />} />
+          <Route path="/card-product" element={<ProductCard />} />
+          <Route path="/order-card" element={<OrderSection />} />
         </Routes>
       </Router>
     </>

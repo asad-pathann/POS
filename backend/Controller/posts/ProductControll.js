@@ -6,9 +6,9 @@ export const CreateProduct = async (req, res) => {
 
   const { user_id } = req.params;
 
-  const { name, stock, category, barcode, price } = req.body;
+  const { name, stock, category, price, image, des } = req.body;
 
-  if (!barcode || !name || !price || !stock) {
+  if (!name || !price || !stock) {
     res.status(404);
     throw new Error("Enter The All Fields");
   }
@@ -28,19 +28,21 @@ export const CreateProduct = async (req, res) => {
     throw new Error("user  undefine");
   }
 
-  let checkBarCode = await Product.findOne({ barcode });
-  if (checkBarCode) {
-    res.status(400);
-    throw new Error("Already present BarCode ");
-  }
+  // let checkBarCode = await Product.findOne({ barcode });
+  // if (checkBarCode) {
+  //   res.status(400);
+  //   throw new Error("Already present BarCode ");
+  // }
 
   const newProduct = await Product.create({
     name,
     user_id,
     stock,
     category,
-    barcode,
+    // barcode,
     price,
+    image,
+    des,
   });
 
   res.send(newProduct);
@@ -51,19 +53,19 @@ export const CreateProduct = async (req, res) => {
 export const getAllProducts = async (req, res) => {
   //
 
-  const { user_id } = req.params;
-  const user = await User.findById(user_id);
-  // find the user role ==
+  // const { user_id } = req.params;
+  // const user = await User.findById(user_id);
+  // // find the user role ==
 
-  if (user.role !== "admin") {
-    res.status(400).json("Only Admin Get The Products");
-  }
+  // if (user.role !== "admin") {
+  //   res.status(400).json("Only Admin Get The Products");
+  // }
 
-  // get the all products
+  // // get the all products
 
-  const getAll = await Product.find()
-    .populate("user_id")
-    .sort({ createAt: -1 });
+  const getAll = await Product.find();
+  // .populate("user_id")
+  // .sort({ createAt: -1 });
   res.send(getAll);
 };
 

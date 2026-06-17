@@ -16,6 +16,7 @@ const Home = () => {
       <Navbar />
       <main className="max-w-screen-xl mx-auto px-4 md:px-6">
         <Hero />
+
         <Categories />
         <DailyDeals />
         <FeaturedProducts />

@@ -8,7 +8,7 @@ import {
   FaUser,
 } from "react-icons/fa";
 
-export const SideBar = () => {
+export const SideBar = ({ state }) => {
   return (
     <>
       <aside className="hidden xl:flex flex-col w-72 bg-white h-screen sticky top-0 border-r border-gray-100 p-8 space-y-10 shadow-sm">

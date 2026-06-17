@@ -24,7 +24,7 @@ const Register = () => {
 
   const roles = ["cashier", "admin"];
 
-  const dispach = useDispatch();
+  const dispatch = useDispatch();
   const navigate = useNavigate();
 
   //
@@ -58,32 +58,43 @@ const Register = () => {
 
     console.log("sending the userData", userData);
 
-    dispach(reg_Slice(userData));
+    dispatch(reg_Slice(userData));
   };
+
+  // useEffect(() => {
+  //   if (userError) {
+  //     toast.error(userMessage || "Registration failed");
+  //     dispatch(userReset());
+  //     return; // ← Important: Error case mein aage mat jao
+  //   }
+
+  //   if (userSuccess && user) {
+  //     const targetRoute =
+  //       user.role === "admin" ? "/dashboard" : "/product-card";
+
+  //     toast.success(`Account created successfully! Welcome ${user.f_name}`);
+
+  //     navigate(targetRoute, { replace: true });
+
+  //     // Reset after navigation
+  //     dispatch(userReset());
+  //   }
+  // }, [userError, userSuccess, userMessage, user, navigate, dispatch]);
 
   useEffect(() => {
     if (userError) {
       toast.error(userMessage);
-      dispach(userReset());
     }
     if (userSuccess) {
-      //
-
-      if (user?.otp) {
-        console.log("✅ OTP FOUND:", user.otp);
-        toast.success("Registered Successfully!");
-        navigate("/otp");
-
-        //
-      } else {
-        console.error("❌ OTP NOT FOUND in user object!");
-
-        console.log("Full user object:", JSON.stringify(user, null, 2));
-        toast.error("OTP not received from server");
+      if (user?.role === "admin") {
+        navigate("/dashbord");
       }
-      dispach(userReset());
+      if (user?.role === "cashier") {
+        navigate("/product-card");
+        toast.success("Successfuly ");
+      }
     }
-  }, [userError, userSuccess, userMessage, navigate, userReset]);
+  }, [userMessage, userError, navigate, user, userSuccess]);
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col items-center p-4">

@@ -52,7 +52,6 @@ export const userSlice = createSlice({
       state.userError = false;
       state.user = null;
       state.userMessage = "";
-      localStorage.removeItem("user");
     },
   },
   extraReducers: (builder) => {
@@ -72,7 +71,7 @@ export const userSlice = createSlice({
       .addCase(reg_Slice.fulfilled, (state, action) => {
         state.userSuccess = true;
         state.user = action.payload;
-        state.userMessage = action.payload;
+        // state.userMessage = action.payload;
         state.userError = false;
         state.userLoading = false;
         localStorage.setItem("user", JSON.stringify(action.payload));
@@ -93,7 +92,7 @@ export const userSlice = createSlice({
       .addCase(login_Slice.fulfilled, (state, action) => {
         state.userSuccess = true;
         state.user = action.payload;
-        state.userMessage = action.payload;
+        // state.userMessage = a;
         state.userError = false;
         state.userLoading = false;
         localStorage.setItem("user", JSON.stringify(action.payload));
@@ -111,7 +110,7 @@ export const userSlice = createSlice({
       })
       .addCase(getUser_Slice.fulfilled, (state, action) => {
         state.userSuccess = true;
-        state.userMessage = action.payload;
+        // state.userMessage = action.payload;
         state.userError = false;
         state.userLoading = false;
       });
@@ -119,4 +118,5 @@ export const userSlice = createSlice({
 });
 
 export default userSlice.reducer;
+
 export const { userReset } = userSlice.actions;
