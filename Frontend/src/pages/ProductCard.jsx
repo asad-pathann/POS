@@ -30,10 +30,6 @@ const ProductCard = ({ state }) => {
     ],
   };
 
-  const { product } = useSelector((state) => state.product);
-
-  console.log(product);
-
   const totalPrice = (item?.price || 0) * quantity;
   // Quantity Handlers
   const handleDecrease = () => {

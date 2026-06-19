@@ -4,27 +4,23 @@ import { FaSearch, FaFilter, FaBolt, FaChevronDown } from "react-icons/fa";
 import { useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { LogOut } from "../Components/LogOut";
 
 const SecoundHomePage = ({ productData }) => {
   const { user } = useSelector((state) => state.auth);
   const navigate = useNavigate();
-
-  const [zeroStock, setZeroStock] = useState(productData?.stock);
+  const [open, setOpen] = useState(false);
   const [storeData, setStoreData] = useState([]);
-  // console.log(productData?.stock);
 
-  const product = useSelector((state) => state.product.product);
   useEffect(() => {
     console.log("useEffect chal gaya");
 
     const handleData = async () => {
       try {
         console.log("API call ho rahi hai");
-
         const response = await axios.get(
           "http://localhost:8888/api/products/get-product",
         );
-
         setStoreData(response.data);
       } catch (error) {
         console.log("ERROR:", error);
@@ -37,6 +33,12 @@ const SecoundHomePage = ({ productData }) => {
       navigate("/");
     }
   }, []);
+
+  // Is function se dropdown toggle (khulega/band hoga) hoga
+  const handleToggle = () => {
+    setOpen(!open);
+  };
+
   return (
     <div className="flex bg-[#eff0f5] min-h-screen w-full font-sans antialiased">
       {/* MAIN CONTENT AREA */}
@@ -64,21 +66,33 @@ const SecoundHomePage = ({ productData }) => {
             <button className="bg-[#eff0f5] p-2.5 text-gray-500 hover:text-[#f57224] transition-all">
               <FaFilter size={14} />
             </button>
-            <div className="flex items-center gap-2 pl-3 border-l border-gray-200">
+
+            {/* FIX 1: Is wrapper ko humne "relative" aur cursor-pointer kiya hai */}
+            <div
+              onClick={handleToggle}
+              className="relative flex items-center gap-2 pl-3 border-l border-gray-200 cursor-pointer select-none"
+            >
               <div className="text-right hidden sm:block">
                 <p className="text-xs font-bold text-gray-900 leading-none">
-                  {user?.f_name} {user?.l_name || ""}{" "}
-                  {/* ← yahan space aur safe kiya */}
+                  {user?.f_name} {user?.l_name || ""}
                 </p>
                 <p className="text-[9px] text-[#f57224] font-extrabold uppercase mt-1">
                   Pro Member
                 </p>
               </div>
+
               <img
                 src="https://ui-avatars.com/api/?name=Asad&background=f57224&color=fff"
                 className="w-8 h-8 rounded-full border border-gray-100 shadow-sm"
                 alt="Profile"
               />
+
+              {/* FIX 2: Dropdown condition ab button ke content ke bahar, lekin 'relative' parent ke andar hai */}
+              {open && (
+                <div className="absolute right-0 top-full mt-2 w-[300px] z-50">
+                  <LogOut />
+                </div>
+              )}
             </div>
           </div>
         </header>
@@ -132,13 +146,15 @@ const SecoundHomePage = ({ productData }) => {
           </button>
         </div>
 
-        {/* EXACT DARAZ STYLE PRODUCT GRID */}
+        {/* PRODUCT GRID */}
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
           {storeData?.map((item) => {
             return (
               <div
                 key={item._id}
-                className={`bg-white hover:shadow-lg transition-shadow  duration-200 cursor-pointer flex flex-col justify-between group ${productData?.stock === 0 && "hidden"}`}
+                className={`bg-white hover:shadow-lg transition-shadow duration-200 cursor-pointer flex flex-col justify-between group ${
+                  productData?.stock === 0 && "hidden"
+                }`}
               >
                 <Link to="/card-product" state={item}>
                   <div>
