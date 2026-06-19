@@ -5,11 +5,15 @@ import { useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 
-const SecoundHomePage = () => {
+const SecoundHomePage = ({ productData }) => {
   const { user } = useSelector((state) => state.auth);
   const navigate = useNavigate();
-  const [storeData, setStoreData] = useState([]);
 
+  const [zeroStock, setZeroStock] = useState(productData?.stock);
+  const [storeData, setStoreData] = useState([]);
+  // console.log(productData?.stock);
+
+  const product = useSelector((state) => state.product.product);
   useEffect(() => {
     console.log("useEffect chal gaya");
 
@@ -20,8 +24,6 @@ const SecoundHomePage = () => {
         const response = await axios.get(
           "http://localhost:8888/api/products/get-product",
         );
-
-        console.log("Response:", response.data);
 
         setStoreData(response.data);
       } catch (error) {
@@ -136,7 +138,7 @@ const SecoundHomePage = () => {
             return (
               <div
                 key={item._id}
-                className="bg-white hover:shadow-lg transition-shadow duration-200 cursor-pointer flex flex-col justify-between group"
+                className={`bg-white hover:shadow-lg transition-shadow  duration-200 cursor-pointer flex flex-col justify-between group ${productData?.stock === 0 && "hidden"}`}
               >
                 <Link to="/card-product" state={item}>
                   <div>

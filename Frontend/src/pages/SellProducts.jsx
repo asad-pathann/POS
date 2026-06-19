@@ -283,6 +283,7 @@ const SellProducts = () => {
           <button
             onClick={PostProducts}
             disabled={loading}
+            productData={control}
             className="w-full bg-blue-600 hover:bg-blue-700 active:scale-[0.99] disabled:bg-blue-400 disabled:pointer-events-none text-white font-bold py-5 rounded-[2rem] shadow-lg shadow-blue-200 hover:shadow-xl hover:shadow-blue-300 transition-all duration-200 text-lg mt-4"
           >
             {loading ? (

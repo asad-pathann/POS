@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 const ProductCard = ({ state }) => {
   // Quantity State
@@ -11,9 +11,9 @@ const ProductCard = ({ state }) => {
   const item = location.state;
   //   use location  sara  router ki information deta hain
   const navigete = useNavigate();
-  console.log(item);
+
   // Product Data
-  const product = {
+  const productReview = {
     brand: "TECNO",
     name: "Tecno Camon 40 Pro 8GB+256GB PTA APPROVED",
     rating: 4.8,
@@ -29,6 +29,10 @@ const ProductCard = ({ state }) => {
       { id: 3, name: "Silver", code: "bg-slate-300", active: false },
     ],
   };
+
+  const { product } = useSelector((state) => state.product);
+
+  console.log(product);
 
   const totalPrice = (item?.price || 0) * quantity;
   // Quantity Handlers
@@ -91,13 +95,13 @@ const ProductCard = ({ state }) => {
           <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
             <span className="text-orange-500">★★★★★</span>
             <a href="#" className="text-blue-500 hover:underline">
-              Ratings {product.reviewsCount}
+              Ratings {productReview.reviewsCount}
             </a>
             <span className="text-gray-300">|</span>
             <span className="text-gray-600">
               Brand:{" "}
               <a href="#" className="text-blue-500 hover:underline">
-                {product.brand}
+                {productReview.brand}
               </a>
             </span>
           </div>
@@ -120,7 +124,7 @@ const ProductCard = ({ state }) => {
                 Rs.{state?.price}
               </span>
               <span className="text-gray-700 font-medium">
-                -{product.discount}%
+                -{productReview.discount}%
               </span>
             </div>
           </div>
@@ -130,7 +134,7 @@ const ProductCard = ({ state }) => {
             <span className="text-lg">📅</span>
             <span>
               Up to 36 months, as low as Rs.{" "}
-              {product.installmentStart.toLocaleString()} per month.
+              {productReview.installmentStart.toLocaleString()} per month.
             </span>
           </div>
 
@@ -140,32 +144,24 @@ const ProductCard = ({ state }) => {
 
           {/* Quantity Selector */}
           <div className="flex items-center gap-4 mb-6">
-            <span className="text-sm text-gray-500">Quantity</span>
-            <div className="flex items-center border border-gray-300 rounded bg-gray-50">
-              <button
-                onClick={handleDecrease}
-                className="px-3 py-1 text-xl font-light text-gray-600 hover:bg-gray-200 transition disabled:opacity-50"
-                disabled={quantity <= 1}
-              >
-                −
-              </button>
-              <span className="px-4 py-1 font-medium text-gray-800 min-w-[40px] text-center">
-                {quantity}
-              </span>
-              <button
-                onClick={handleIncrease}
-                className="px-3 py-1 text-xl font-light text-gray-600 hover:bg-gray-200 transition"
-              >
-                +
-              </button>
+            <span className="text-sm text-gray-800 font-bold">Total Stock</span>
+            <div className="flex items-center border  px-4   border-gray-300 rounded bg-gray-50">
+              {item?.stock}
             </div>
           </div>
 
           {/* Action Buttons */}
           <div className="grid grid-cols-2 gap-3 mt-auto">
-            <button className="bg-[#26abd4] hover:bg-[#1f93b8] text-white font-medium py-3 rounded text-center transition shadow-sm">
-              Buy Now
-            </button>
+            <Link
+              to={"/order-card"}
+              state={{
+                item,
+              }}
+            >
+              <button className="bg-[#26abd4] w-full hover:bg-[#1f93b8] text-white font-medium py-3 rounded text-center transition shadow-sm">
+                Buy Now
+              </button>
+            </Link>
             <button className="bg-[#f57224] hover:bg-[#d65f1a] text-white font-medium py-3 rounded text-center transition shadow-sm">
               Add to Cart
             </button>

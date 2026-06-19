@@ -21,6 +21,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use("/api/users", UserRouter);
 app.use("/api/orders", OrderRoutes);
 app.use("/api/products", productRouter);
+
 app.use("/api/payments", PaymentRoute);
 
 app.use(authHandler);

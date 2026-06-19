@@ -44,7 +44,9 @@ export const createOrder = async (req, res) => {
     product_id,
     user_id,
     totalPrice,
+    phoneNumber,
     price,
+    address,
     quantity,
   });
 

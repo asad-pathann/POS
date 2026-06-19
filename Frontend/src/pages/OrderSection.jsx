@@ -1,53 +1,157 @@
 import React, { useState, useEffect } from "react";
-import { Home, Briefcase } from "lucide-react";
-import { useLocation } from "react-router-dom";
+import {
+  Home,
+  Briefcase,
+  Truck,
+  CreditCard,
+  Tag,
+  ShoppingBag,
+} from "lucide-react";
+import { useLocation, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import { useDispatch, useSelector } from "react-redux";
+import { order_slice, resetOrder } from "../feature/orderSlice";
+import axios from "axios";
+import OrderSummaryUI from "../Components/produts/OrderSaveData";
 
 export default function CheckoutPage() {
   const location = useLocation();
-  const item = location.state; // Previous page se item aa raha hai
+  const { item } = location.state || {};
 
+  console.log(item?.image);
+  const { user } = useSelector((state) => state.auth);
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  const { order, orderLoading, orderError, orderSuccess, orderMessage } =
+    useSelector((state) => state.order);
+  const [orderSaveData, setorderSaveData] = useState(false);
+
+  // ==================== FORM STATE ====================
   const [formData, setFormData] = useState({
     customerName: "",
     phoneNumber: "",
-    address: "", // Full address
+    address: "",
     addressLabel: "HOME",
     price: "",
     quantity: "1",
     totalPrice: "",
     paymentMethod: "",
-    status: "", // Promotion code
+    promotionCode: "",
   });
 
-  // Pre-fill data from previous page (agar item ho)
+  const [isPriceLocked, setIsPriceLocked] = useState(false);
+
+  // ==================== INITIAL DATA FROM PREVIOUS PAGE ====================
   useEffect(() => {
-    if (item) {
+    if (item?.price) {
+      const price = Number(item.price);
+      const quantity = Number(item.quantity) || 1;
+
       setFormData((prev) => ({
         ...prev,
-        price: item.price || "",
-        quantity: item.quantity || "1",
-        totalPrice: item.totalPrice || item.price * (item.quantity || 1) || "",
+        price: String(price),
+        quantity: String(quantity),
+        totalPrice: String(price * quantity),
       }));
+      setIsPriceLocked(true);
     }
   }, [item]);
 
-  // Total Price auto calculate
+  // ==================== AUTO CALCULATE TOTAL ====================
   useEffect(() => {
-    const priceNum = parseFloat(formData.price) || 0;
-    const qtyNum = parseInt(formData.quantity) || 1;
-    const total = priceNum * qtyNum;
+    const price = Number(formData.price) || 0;
+    const quantity = Number(formData.quantity) || 1;
 
-    setFormData((prev) => ({ ...prev, totalPrice: total.toFixed(0) }));
-  }, [formData.price, formData.quantity]);
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: value,
+      totalPrice: String(price * quantity),
     }));
+  }, [formData.price, formData.quantity]);
+
+  // ==================== HANDLERS ====================
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+
+    if (isPriceLocked && name === "price") {
+      toast.error("Price is locked from product page!");
+      return;
+    }
+
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const selectLabel = (label) => {
+    setFormData((prev) => ({ ...prev, addressLabel: label }));
+  };
+
+  // ==================== SAVE ORDER (FIXED) ====================
+  const saveOrder = async (e) => {
+    e.preventDefault();
+
+    // 1. Basic validation
+    if (!formData.customerName || !formData.phoneNumber || !formData.address) {
+      toast.error("Please fill all required fields!");
+      return;
+    }
+
+    // 2. STOCK VALIDATION (Strict Number Parsing)
+    const availbalStock = Number(item?.stock) || 0;
+    const enteredQuantity = Number(formData.quantity) || 0;
+
+    if (enteredQuantity > availbalStock) {
+      toast.error(`Stock not available! Only ${availbalStock} items left.`);
+      return; // ❌ Yahan se function ruk jayega, aage ka code execute nahi hoga!
+    }
+
+    // 3. Prepare Order Data
+    const orderData = {
+      ...formData,
+      quantity: enteredQuantity, // Explicitly number bhejein
+      price: Number(formData.price),
+      totalPrice: Number(formData.totalPrice),
+      user_id: user?._id,
+      product_id: item?._id,
+      grandTotal: Number(formData.totalPrice) + 150,
+    };
+
+    // 4. Save to LocalStorage & State if stock is valid
+    localStorage.setItem("order-card", JSON.stringify(orderData));
+    toast.success("Order saved successfully!");
+    setorderSaveData(true);
+  };
+
+  const proceedToPay = (e) => {
+    e.preventDefault();
+    const availbalStock = Number(item?.stock) || 0;
+    const enteredQuantity = Number(formData.quantity) || 0;
+
+    if (enteredQuantity > availbalStock) {
+      toast.error(`Stock not available! Only ${availbalStock} items left.`);
+      return; // ❌ Yahan se function ruk jayega, aage ka code execute nahi hoga!
+    }
+    const orderData = {
+      ...formData,
+      quantity: enteredQuantity, // Explicitly number bhejein
+      price: Number(formData.price),
+      totalPrice: Number(formData.totalPrice),
+      user_id: user?._id,
+      product_id: item?._id,
+      grandTotal: Number(formData.totalPrice) + 150,
+    };
+
+    const savedOrder = localStorage.getItem("order-card");
+    if (!savedOrder) {
+      toast.error("Please save order first!");
+      return;
+    }
+    dispatch(order_slice(orderData));
+
+    toast.success("Proceeding to payment...");
+    // navigate("/payment");
+  };
+
+  // Destructure
   const {
     customerName,
     phoneNumber,
@@ -56,258 +160,266 @@ export default function CheckoutPage() {
     quantity,
     totalPrice,
     paymentMethod,
-    status,
+    promotionCode,
     addressLabel,
   } = formData;
 
-  const handleClick = (e) => {
-    e.preventDefault();
+  const grandTotal = Number(totalPrice) + 150;
 
-    const orderData = {
-      ...formData,
-      deliveryFee: 150,
-      grandTotal: Number(formData.totalPrice) + 150,
-    };
-
-    localStorage.setItem("order-card", JSON.stringify(orderData));
-
-    toast.success("Order Data Successfully Added");
-
-    setFormData((prev) => ({
-      ...prev,
-      customerName: "",
-      phoneNumber: "",
-      address: "",
-      paymentMethod: "",
-      status: "",
-    }));
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const saveData = localStorage.getItem("order-card");
-
-    if (!saveData) {
-      alert("Please Save Information First");
+  useEffect(() => {
+    if (item?.stock - quantity) {
       return;
     }
-    let orderData = JSON.parse(saveData);
-    console.log("order pleced");
-  };
-  return (
-    <div className="min-h-screen bg-gray-50 py-10 px-4 md:px-10">
-      <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* LEFT COLUMN */}
-        <div className="lg:col-span-2 bg-white p-6 rounded-sm shadow-sm border border-gray-100">
-          <h2 className="text-xl font-semibold text-gray-800 mb-6">
-            Delivery Information
-          </h2>
+    if (orderError) {
+      toast.error(orderMessage);
+    }
+    if (orderSuccess) {
+      toast.success("order Successfuly  add");
+    }
+    dispatch(resetOrder());
+  }, [orderError, orderSuccess, orderMessage, dispatch]);
 
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Full Name
-                </label>
+  return (
+    <div className="min-h-screen bg-gray-50 py-10 px-4">
+      <div className="max-w-6xl mx-auto">
+        <h1 className="text-2xl font-bold mb-8 flex items-center gap-2">
+          <ShoppingBag className="text-orange-500" />
+          Checkout
+        </h1>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* ==================== LEFT: FORM ==================== */}
+          <div
+            className={`lg:col-span-2  p-6 rounded-lg shadow ${orderSaveData ? "bg-gray-100" : "bg-white"}`}
+          >
+            {orderSaveData ? (
+              <OrderSummaryUI orderData={formData} product={item} />
+            ) : (
+              <>
+                <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                  <Truck size={18} /> Delivery Information
+                </h2>
+
+                <form onSubmit={saveOrder} className="space-y-4">
+                  {/* Name & Phone */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-1">
+                        Full Name *
+                      </label>
+                      <input
+                        type="text"
+                        name="customerName"
+                        value={customerName}
+                        onChange={handleChange}
+                        placeholder="John Doe"
+                        className="w-full border p-2 rounded focus:border-blue-500 outline-none"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1">
+                        Phone *
+                      </label>
+                      <input
+                        type="tel"
+                        name="phoneNumber"
+                        value={phoneNumber}
+                        onChange={handleChange}
+                        placeholder="03xx-xxxxxxx"
+                        className="w-full border p-2 rounded focus:border-blue-500 outline-none"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  {/* Price & Quantity */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-1">
+                        Price *{" "}
+                        {isPriceLocked && (
+                          <span className="text-blue-500">🔒 Locked</span>
+                        )}
+                      </label>
+                      <input
+                        type="number"
+                        name="price"
+                        value={price}
+                        onChange={handleChange}
+                        disabled={isPriceLocked}
+                        className={`w-full border p-2 rounded outline-none ${
+                          isPriceLocked
+                            ? "bg-gray-100 cursor-not-allowed"
+                            : "focus:border-blue-500"
+                        }`}
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium mb-1">
+                        Quantity *
+                      </label>
+                      <input
+                        type="number"
+                        name="quantity"
+                        value={quantity}
+                        onChange={handleChange}
+                        min="1"
+                        max={item?.stock}
+                        className="w-full border p-2 rounded focus:border-blue-500 outline-none"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  {/* Address */}
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      Address *
+                    </label>
+                    <textarea
+                      name="address"
+                      value={address}
+                      onChange={handleChange}
+                      rows="3"
+                      placeholder="House# 123, Street# 123, City"
+                      className="w-full border p-2 rounded focus:border-blue-500 outline-none resize-none"
+                      required
+                    />
+                  </div>
+
+                  {/* Address Label */}
+                  <div>
+                    <label className="block text-sm font-medium mb-2">
+                      Address Label
+                    </label>
+                    <div className="flex gap-3">
+                      <button
+                        type="button"
+                        onClick={() => selectLabel("OFFICE")}
+                        className={`flex items-center gap-2 px-4 py-2 border rounded ${
+                          addressLabel === "OFFICE"
+                            ? "border-blue-500 bg-blue-50 text-blue-600"
+                            : "border-gray-300 hover:bg-gray-50"
+                        }`}
+                      >
+                        <Briefcase size={16} /> Office
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => selectLabel("HOME")}
+                        className={`flex items-center gap-2 px-4 py-2 border rounded ${
+                          addressLabel === "HOME"
+                            ? "border-orange-400 bg-orange-50 text-orange-500"
+                            : "border-gray-300 hover:bg-gray-50"
+                        }`}
+                      >
+                        <Home size={16} /> Home
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Payment Method */}
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      Payment Method *
+                    </label>
+                    <div className="relative">
+                      <CreditCard
+                        className="absolute left-3 top-3 text-gray-400"
+                        size={18}
+                      />
+                      <input
+                        type="text"
+                        name="paymentMethod"
+                        value={paymentMethod}
+                        onChange={handleChange}
+                        placeholder="Cash on Delivery / Card / JazzCash"
+                        className="w-full border p-2 pl-10 rounded focus:border-blue-500 outline-none"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="bg-blue-500 hover:bg-blue-600 text-white px-8 py-2 rounded transition"
+                  >
+                    💾 Save Order
+                  </button>
+                </form>
+              </>
+            )}
+          </div>
+          {/* ==================== RIGHT: SUMMARY ==================== */}
+          <div className="space-y-4">
+            {/* Promotion */}
+            <div className="bg-white p-4 rounded-lg shadow">
+              <h3 className="font-semibold flex items-center gap-2 mb-2">
+                <Tag size={16} /> Promotion
+              </h3>
+              <div className="flex gap-2">
                 <input
                   type="text"
-                  name="customerName"
-                  value={customerName}
+                  name="promotionCode"
+                  value={promotionCode}
                   onChange={handleChange}
-                  placeholder="Enter your full name"
-                  className="w-full border border-gray-300 p-2.5 rounded-sm focus:outline-none focus:border-cyan-500 text-sm"
-                  required
+                  placeholder="Enter code"
+                  className="flex-1 border p-2 rounded focus:border-blue-500 outline-none text-sm"
                 />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Phone Number
-                </label>
-                <input
-                  type="tel"
-                  name="phoneNumber"
-                  value={phoneNumber}
-                  onChange={handleChange}
-                  placeholder="03xx-xxxxxxx"
-                  className="w-full border border-gray-300 p-2.5 rounded-sm focus:outline-none focus:border-cyan-500 text-sm"
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Price (per item)
-                </label>
-                <input
-                  type="number"
-                  name="price"
-                  value={price}
-                  onChange={handleChange}
-                  placeholder="Enter price"
-                  className="w-full border border-gray-300 p-2.5 rounded-sm focus:outline-none focus:border-cyan-500 text-sm"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Quantity
-                </label>
-                <input
-                  type="number"
-                  name="quantity"
-                  value={quantity}
-                  onChange={handleChange}
-                  min="1"
-                  className="w-full border border-gray-300 p-2.5 rounded-sm focus:outline-none focus:border-cyan-500 text-sm"
-                  required
-                />
-              </div>
-            </div>
-
-            {/* Full Address */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Full Address
-              </label>
-              <textarea
-                name="address"
-                value={address}
-                onChange={handleChange}
-                rows="3"
-                placeholder="House# 123, Street# 123, Colony, City"
-                className="w-full border border-gray-300 p-2.5 rounded-sm focus:outline-none focus:border-cyan-500 text-sm resize-none"
-                required
-              />
-            </div>
-
-            {/* Address Label */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Select Address Label:
-              </label>
-              <div className="flex gap-4">
                 <button
                   type="button"
-                  onClick={() =>
-                    setFormData((prev) => ({ ...prev, addressLabel: "OFFICE" }))
-                  }
-                  className={`flex items-center justify-center gap-2 px-6 py-2.5 border text-sm font-medium rounded-sm transition-all w-32 ${
-                    addressLabel === "OFFICE"
-                      ? "border-cyan-500 bg-cyan-50 text-cyan-600 font-semibold"
-                      : "border-gray-300 text-gray-600 hover:bg-gray-50"
-                  }`}
+                  className="bg-blue-500 text-white px-4 py-2 rounded text-sm hover:bg-blue-600 transition"
                 >
-                  <Briefcase size={16} />
-                  OFFICE
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() =>
-                    setFormData((prev) => ({ ...prev, addressLabel: "HOME" }))
-                  }
-                  className={`flex items-center justify-center gap-2 px-6 py-2.5 border text-sm font-medium rounded-sm transition-all w-32 ${
-                    addressLabel === "HOME"
-                      ? "border-orange-400 bg-orange-50 text-orange-500 font-semibold"
-                      : "border-gray-300 text-gray-600 hover:bg-gray-50"
-                  }`}
-                >
-                  <Home size={16} />
-                  HOME
+                  Apply
                 </button>
               </div>
             </div>
 
-            {/* Payment Method */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Payment Method
-              </label>
-              <input
-                type="text"
-                name="paymentMethod"
-                value={paymentMethod}
-                onChange={handleChange}
-                placeholder="Cash on Delivery / Card / JazzCash etc."
-                className="w-full border border-gray-300 p-2.5 rounded-sm focus:outline-none focus:border-cyan-500 text-sm"
-                required
-              />
-            </div>
+            {/* Order Summary */}
+            <div className="bg-white p-4 rounded-lg shadow">
+              <h3 className="font-semibold mb-3">Order Summary</h3>
 
-            <div className="flex justify-end pt-4">
-              <button
-                onClick={handleClick}
-                type="submit"
-                className="bg-[#1ea6d9] hover:bg-cyan-600 text-white font-medium uppercase text-sm py-2.5 px-12 transition-colors rounded-sm shadow-sm"
-              >
-                Save Information
-              </button>
-            </div>
-          </form>
-        </div>
-
-        {/* RIGHT COLUMN */}
-        <div className="space-y-6">
-          {/* Promotion */}
-          <div className="bg-white p-4 rounded-sm border border-gray-100 shadow-sm">
-            <h3 className="text-gray-700 text-sm font-medium mb-2">
-              Promotion
-            </h3>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                name="status"
-                value={status}
-                onChange={handleChange}
-                placeholder="Enter Store/Daraz Code"
-                className="flex-1 border border-gray-300 p-2 text-sm rounded-sm focus:outline-none focus:border-cyan-500"
-              />
-              <button className="bg-[#1ea6d9] hover:bg-cyan-600 text-white text-xs font-semibold px-4 uppercase rounded-sm transition-colors">
-                Apply
-              </button>
-            </div>
-          </div>
-
-          {/* Order Summary */}
-          <div className="bg-white p-5 rounded-sm border border-gray-100 shadow-sm">
-            <h3 className="text-gray-800 text-base font-semibold mb-4">
-              Order Summary
-            </h3>
-
-            <div className="space-y-3 text-sm text-gray-600 border-b border-gray-100 pb-4">
-              <div className="flex justify-between">
-                <span>Items Total ({quantity} items)</span>
-                <span className="font-medium text-gray-800">
-                  Rs. {totalPrice}
-                </span>
+              <div className="space-y-2 text-sm border-b pb-3">
+                <div className="flex justify-between">
+                  <span>Price per item</span>
+                  <span className="font-medium">Rs. {price || 0}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Quantity</span>
+                  <span className="font-medium">× {quantity || 1}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Items Total</span>
+                  <span className="font-medium">Rs. {totalPrice || 0}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Delivery Fee</span>
+                  <span className="font-medium">Rs. 150</span>
+                </div>
               </div>
-              <div className="flex justify-between">
-                <span>Delivery Fee</span>
-                <span className="font-medium text-gray-800">Rs. 150</span>
-              </div>
-            </div>
 
-            <div className="pt-4 mb-5">
-              <div className="flex justify-between items-baseline">
-                <span className="text-sm font-medium text-gray-700">
-                  Total:
-                </span>
+              <div className="mt-3 flex justify-between items-center">
+                <span className="font-semibold">Grand Total</span>
                 <span className="text-xl font-bold text-orange-500">
-                  Rs. {Number(totalPrice) + 150}
+                  Rs. {grandTotal}
                 </span>
               </div>
-            </div>
 
-            <button
-              onClick={handleSubmit}
-              className="w-full bg-[#f57224] hover:bg-orange-600 text-white font-medium py-3 text-sm transition-colors rounded-sm shadow-sm"
-            >
-              Proceed to Pay
-            </button>
+              <button
+                onClick={proceedToPay}
+                className="w-full mt-4 bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 rounded transition"
+              >
+                {/* {orderLoading ? (
+                  <Rings size={"20px"} className="mx-auto" />
+                ) : (
+               
+                )} */}
+                Proceed to Pay
+              </button>
+            </div>
           </div>
         </div>
       </div>
