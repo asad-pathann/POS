@@ -5,7 +5,7 @@ import { MarketData } from "../Components/CategoryData";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { Nav } from "../Components/produts/PostProductNav";
 import toast from "react-hot-toast";
-import { productPost } from "../feature/productsSlice";
+import { productPost, productReset } from "../feature/productsSlice";
 // import { productPost } from "../feature/productsSlice";
 
 const SellProducts = () => {
@@ -33,6 +33,13 @@ const SellProducts = () => {
   // Active path check karne ke liye helper function
   const isActive = (path) => location.pathname === path;
 
+  const {
+    product,
+    productLoading,
+    productSuccess,
+    productError,
+    productMessage,
+  } = useSelector((state) => state.products);
   // Handle Input Change
   const handleControll = (e) => {
     const { name, value } = e.target;
@@ -68,7 +75,6 @@ const SellProducts = () => {
         image: imageUrl,
       };
 
-      console.log(imageUrl);
       await dispatch(productPost(productData)).unwrap();
       setControl({
         name: "",
@@ -78,6 +84,7 @@ const SellProducts = () => {
 
         category: "",
       });
+
       toast.success("Product Posted Successfully");
     } catch (error) {
       console.log(error);
@@ -114,6 +121,17 @@ const SellProducts = () => {
       navigate("/");
     }
   });
+
+  // useEffect(() => {
+  //   if (productError) {
+  //     toast.error(productMessage);
+  //   }
+  //   if (productSuccess) {
+  //     toast.success("product Successfuly Add ");
+  //     navigate("/dashbord");
+  //   }
+  //   dispatch(productReset());
+  // }, [productSuccess, productMessage, productError, productLoading, dispatch]);
 
   return (
     <div className="bg-[#F8FAFC] min-h-screen w-full pb-32 font-sans text-slate-900 selection:bg-blue-500 selection:text-white">

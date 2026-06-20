@@ -1,22 +1,35 @@
+import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
 import { useSelector } from "react-redux";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 export const Nav = () => {
   const isActive = (path) => location.pathname === path;
   const { user } = useSelector((state) => state.auth);
 
+  const navigate = useNavigate();
   return (
     <>
       <nav className="sticky top-0 z-50 bg-white/80 w-full border-b border-slate-100 px-4 sm:px-6 py-4 backdrop-blur-md transition-all">
         <div className="max-w-5xl mx-auto flex items-center justify-between gap-4 w-full">
           {/* Logo (Left Side) */}
-          <Link to="/" className="flex items-center gap-2 group shrink-0">
-            <div className="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center text-white font-black text-xl shadow-md shadow-blue-200 group-hover:scale-105 transition-transform">
-              D
+          <div className="flex items-center gap-4  ">
+            <div className=" cursor-pointer">
+              <FaArrowLeft
+                onClick={() => navigate(-1)}
+                className="hover:-translate-x-2 transition-all duration-200"
+              />
             </div>
-            <span className="font-black text-xl tracking-tight text-slate-900 group-hover:text-blue-600 transition-colors">
-              Darza<span className="text-blue-600">.</span>
-            </span>
-          </Link>
+            <Link
+              to="/product-card"
+              className="flex items-center gap-2 group shrink-0"
+            >
+              <div className="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center text-white font-black text-xl shadow-md shadow-blue-200 group-hover:scale-105 transition-transform">
+                D
+              </div>
+              <span className="font-black text-xl tracking-tight text-slate-900 group-hover:text-blue-600 transition-colors">
+                Darza<span className="text-blue-600">.</span>
+              </span>
+            </Link>
+          </div>
 
           {/* Desktop Navigation Links (Center / Right Aligned perfectly) */}
           <div className="hidden md:flex items-center justify-end flex-1 gap-8 font-bold text-sm text-slate-600 px-4">

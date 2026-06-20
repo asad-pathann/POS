@@ -26,8 +26,10 @@ import {
   ChevronRight,
   Menu,
   X,
+  ArrowLeft,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
+import { FaEdit, FaTrashAlt } from "react-icons/fa";
 
 // 1. useDispatch ko import kiya
 import { useSelector, useDispatch } from "react-redux";
@@ -44,8 +46,10 @@ export default function Dashbord() {
   const { user } = useSelector((state) => state.auth);
 
   // Redux Products State
-  const { product, productLoading } = useSelector((state) => state.products);
-
+  const product = useSelector((state) => state.products?.product || []);
+  const productLoading = useSelector(
+    (state) => state.products?.productLoading || false,
+  );
   // Redux Orders State (Masla 3 Fixed: 'orders' ko pull kiya jo array hai)
   const { orders, orderLoading } = useSelector((state) => state.orders);
 
@@ -82,17 +86,16 @@ export default function Dashbord() {
         className={`fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-[#E9ECEF] flex flex-col justify-between p-4 transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
       >
         <div>
-          <div className="flex items-center justify-between px-2 py-3 mb-6">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center text-white font-bold text-lg">
-                F
-              </div>
-              <span className="font-bold text-lg tracking-tight">
-                Fixoria sales
-              </span>
-            </div>
-            <button className="lg:hidden" onClick={() => setSidebarOpen(false)}>
-              <X size={20} className="text-gray-500" />
+          <div className="max-w-3xl mx-start w-full -mt-3 pt-4 border-t border-slate-200 flex justify-center">
+            <button
+              onClick={() => navigate(-1)} // -1 likhne se user wapas pichle route par chala jayega, ya yahan apna route path "/" likh dein
+              className="inline-flex items-center gap-2 px-6 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-medium text-sm rounded-lg shadow-sm transition-all duration-200 group active:scale-95"
+            >
+              <ArrowLeft
+                size={16}
+                className="transition-transform group-hover:-translate-x-1"
+              />
+              Wapas Jayein (Go Back)
             </button>
           </div>
           <nav className="space-y-6 overflow-y-auto max-h-[calc(100vh-160px)] no-scrollbar">
@@ -112,9 +115,11 @@ export default function Dashbord() {
                     <li className="py-1.5 font-medium text-black cursor-pointer">
                       Products
                     </li>
-                    <li className="py-1.5 hover:text-black cursor-pointer">
-                      Orders
-                    </li>
+                    <Link to={"/get-order"}>
+                      <li className="py-1.5 hover:text-black cursor-pointer">
+                        Orders
+                      </li>
+                    </Link>
                     <li className="py-1.5 hover:text-black cursor-pointer">
                       Inventory
                     </li>
@@ -189,11 +194,25 @@ export default function Dashbord() {
               />
             </div>
           </div>
+          <div className="flex items-center justify-between px-2 py-3 mb-6">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center text-white font-bold text-lg">
+                F
+              </div>
+              <span className="font-bold text-lg tracking-tight">
+                Fixoria sales
+              </span>
+            </div>
+            <button className="lg:hidden" onClick={() => setSidebarOpen(false)}>
+              <X size={20} className="text-gray-500" />
+            </button>
+          </div>
         </header>
 
         <main className="flex-1 overflow-y-auto p-4 lg:p-8">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
             <h1 className="text-xl font-bold tracking-tight">Products List</h1>
+
             <div className="flex items-center gap-2 self-end sm:self-auto">
               <Link to={"/product"}>
                 <button className="flex items-center gap-1.5 px-3 py-2 bg-[#6320EE] text-white rounded-lg text-sm font-medium hover:bg-[#5119C7] shadow-sm">
@@ -241,12 +260,13 @@ export default function Dashbord() {
                             <div className="flex items-center gap-3">
                               <img
                                 src={
-                                  item.img ||
-                                  item.image ||
+                                  item?.img ||
+                                  item?.image ||
                                   "https://via.placeholder.com/40"
                                 }
-                                alt={item.name}
-                                className="w-10 h-10 rounded-lg object-cover bg-gray-100"
+                                className="w-10 h-10 rounded-lg object-cover
+                                bg-gray-100"
+                                alt={item?.name || "product"}
                               />
                               <span className="text-gray-900 font-semibold">
                                 {item.name}
@@ -276,9 +296,22 @@ export default function Dashbord() {
                               type={item.statusColor || "green"}
                             />
                           </td>
-                          <td className="p-4 text-center">
-                            <button className="text-gray-400 hover:text-gray-600 p-1 rounded-md">
-                              <MoreHorizontal size={18} />
+                          <td className="p-4 flex  gap-3  items-center text-center">
+                            <button
+                              style={{
+                                clipPath: "circle",
+                              }}
+                              className="text-red-400 h-[40px] w-[40px]  rounded-full cursor-pointer  flex items-center justify-center bg-gray-100 hover:text-red-600 p-1 "
+                            >
+                              <FaTrashAlt />
+                            </button>
+                            <button
+                              style={{
+                                clipPath: "circle",
+                              }}
+                              className="text-green-400 h-[40px] w-[40px]  rounded-full cursor-pointer  flex items-center justify-center bg-gray-100 hover:text-green-600 p-1 "
+                            >
+                              <FaEdit />
                             </button>
                           </td>
                         </tr>

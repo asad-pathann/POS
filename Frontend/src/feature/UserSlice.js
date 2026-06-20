@@ -53,6 +53,15 @@ export const userSlice = createSlice({
       state.user = null;
       state.userMessage = "";
     },
+    UserLogOut: (state) => {
+      state.user = null;
+      state.userLoading = false;
+      state.userSuccess = false;
+      state.userError = false;
+      state.user = null;
+      state.userMessage = "";
+      localStorage.removeItem("user");
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -120,3 +129,4 @@ export const userSlice = createSlice({
 export default userSlice.reducer;
 
 export const { userReset } = userSlice.actions;
+export const { UserLogOut } = userSlice.actions;

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 
 // Sub-Components (Neeche define kiye gaye hain)
 import {
@@ -9,8 +9,17 @@ import {
   BottomNav,
 } from "./../Components/HomeComponent";
 import { Navbar } from "../Components/Navbar";
+import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 
 const Home = () => {
+  const { user } = useSelector((state) => state.auth);
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (user) {
+      navigate("/product-card");
+    }
+  });
   return (
     <div className="bg-[#F8FAFC] min-h-screen font-sans pb-24">
       <Navbar />

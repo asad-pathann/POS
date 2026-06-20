@@ -1,43 +1,70 @@
+import React from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { UserLogOut } from "../feature/UserSlice";
+
 export const LogOut = () => {
+  const { user } = useSelector((state) => state.auth);
+
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  const navigateUser = () => {
+    if (user?.role === "admin") {
+      navigate("/dashbord");
+    } else {
+      navigate("/");
+    }
+  };
+
+  const handleLogOut = () => {
+    dispatch(UserLogOut()); // Redux clear
+    localStorage.removeItem("user"); // safety extra
+    navigate("/"); // redirect login/home
+  };
+
   return (
     <div className="w-full bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-2xl">
-      {/* Profile Header Block */}
+      {/* Profile Header */}
       <div className="flex items-center justify-between pb-3 border-b border-slate-800 mb-2">
         <div className="text-left">
           <h4 className="text-sm font-bold text-white leading-tight">
-            Elijah Warren Ciaran Stafford
+            {user?.f_name || "User"}
           </h4>
           <span className="text-[10px] font-extrabold text-orange-500 tracking-wider block mt-0.5">
-            PRO MEMBER
+            {user?.role || "MEMBER"}
           </span>
         </div>
-        {/* Avatar */}
-        <div className="w-10 h-10 rounded-full bg-orange-500 flex items-center justify-center text-white font-semibold text-sm shrink-0 ml-3">
-          AS
+
+        <div className="w-10 h-10 rounded-full bg-orange-500 flex items-center justify-center text-white font-semibold text-sm">
+          {user?.f_name?.charAt(0) || "U"}
         </div>
       </div>
 
-      {/* Quick Navigation / Options */}
+      {/* Options */}
       <div className="space-y-1">
-        <button className="w-full flex items-center justify-between px-3 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors text-left">
+        <button
+          onClick={navigateUser}
+          className="w-full flex items-center justify-between px-3 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg"
+        >
           <span>My Profile</span>
-          <span className="text-xs text-slate-500">→</span>
+          <span>→</span>
         </button>
 
-        <button className="w-full flex items-center justify-between px-3 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors text-left">
+        <button className="w-full flex items-center justify-between px-3 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg">
           <span>Account Settings</span>
-          <span className="text-xs text-slate-500">→</span>
+          <span>→</span>
         </button>
 
-        {/* Separator Line */}
         <div className="h-px bg-slate-800 my-2" />
 
-        {/* Logout Button */}
+        {/* LOGOUT BUTTON (FIXED) */}
         <button
-          onClick={() => console.log("Logging out...")}
-          className="w-full flex items-center justify-between px-3 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-950/30 rounded-lg transition-colors text-left font-medium"
+          onClick={handleLogOut}
+          className="w-full flex items-center justify-between px-3 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-950/30 rounded-lg font-medium"
         >
           <span>Logout</span>
+
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="16"

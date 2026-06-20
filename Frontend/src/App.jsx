@@ -13,6 +13,7 @@ import SecoundHomePage from "./pages/SecoundHomePage";
 import Dashbord from "./pages/Dashbord";
 import ProductCard from "./pages/ProductCard";
 import OrderSection from "./pages/OrderSection";
+import GetOrder from "./Components/produts/orders/GetOrder";
 
 const app = () => {
   return (
@@ -36,6 +37,7 @@ const app = () => {
           <Route path="/dashbord" element={<Dashbord />} />
           <Route path="/card-product" element={<ProductCard />} />
           <Route path="/order-card" element={<OrderSection />} />
+          <Route path="/get-order" element={<GetOrder />} />
         </Routes>
       </Router>
     </>
