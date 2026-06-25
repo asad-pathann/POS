@@ -4,13 +4,9 @@ import RegisterForm, { RegisterHeadContent } from "../Components/RegisterForm";
 import { useDispatch, useSelector } from "react-redux";
 import { reg_Slice, userReset } from "../feature/UserSlice";
 import toast from "react-hot-toast";
-import axios from "axios";
 
 const Register = () => {
-  // role  ke  defult    value  cashier hain
-
   const [selectedRole, setSelectedRole] = useState("cashier");
-
   const [agreed, setAgreed] = useState(false);
   const [control, setControl] = useState({
     email: "",
@@ -20,18 +16,15 @@ const Register = () => {
     role: "",
   });
 
-  const { email, password, f_name, l_name, role } = control;
-
+  const { email, password, f_name, l_name } = control;
   const roles = ["cashier", "admin"];
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  //
-  //
-
-  const { user, userLoading, userSuccess, userMessage, userError } =
-    useSelector((state) => state.auth);
+  const { user, userSuccess, userMessage, userError } = useSelector(
+    (state) => state.auth,
+  );
 
   const handleControl = (e) => {
     setControl({
@@ -44,9 +37,11 @@ const Register = () => {
     e.preventDefault();
 
     if (!f_name || !email || !password || !l_name || !selectedRole) {
-      toast.error("Enter the All Fields");
+      toast.error("Enter all fields");
       return;
     }
+
+    // Term and conditions ka check agar lagana chahein
 
     let userData = {
       email,
@@ -57,50 +52,28 @@ const Register = () => {
     };
 
     console.log("sending the userData", userData);
-
     dispatch(reg_Slice(userData));
   };
 
-  // useEffect(() => {
-  //   if (userError) {
-  //     toast.error(userMessage || "Registration failed");
-  //     dispatch(userReset());
-  //     return; // ← Important: Error case mein aage mat jao
-  //   }
-
-  //   if (userSuccess && user) {
-  //     const targetRoute =
-  //       user.role === "admin" ? "/dashboard" : "/product-card";
-
-  //     toast.success(`Account created successfully! Welcome ${user.f_name}`);
-
-  //     navigate(targetRoute, { replace: true });
-
-  //     // Reset after navigation
-  //     dispatch(userReset());
-  //   }
-  // }, [userError, userSuccess, userMessage, user, navigate, dispatch]);
-
+  // ==== DONO USEEFFECTS KO EK MEIN MEIN MERGE KIYA HAI ====
   useEffect(() => {
     if (userError) {
-      toast.error(userMessage);
+      toast.error(userMessage || "Registration failed");
     }
+
     if (userSuccess) {
-      if (user?.role === "admin") {
-        navigate("/dashbord");
-      }
-      if (user?.role === "cashier") {
-        navigate("/product-card");
-        toast.success("Successfuly ");
-      }
+      toast.success("Account created successfully! Please verify OTP.");
+      // Pura system secure rakhne ke liye direct OTP page par navigate karein
+      navigate("/otp");
     }
-  }, [userMessage, userError, navigate, user, userSuccess]);
+  }, [userError, userSuccess, userMessage, navigate, dispatch]);
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col items-center p-4">
-      <div className="w-full  bg-white rounded-xl md:w-[60%] xl:w-[35%] lg:w-[45%]  p-3     shadow-lg flex flex-col items-center">
+      <div className="w-full bg-white rounded-xl md:w-[60%] xl:w-[35%] lg:w-[45%] p-3 shadow-lg flex flex-col items-center">
         {/* Header/Logo Section */}
         <RegisterHeadContent />
+
         {/* Content Section */}
         <div className="w-full p-8 pt-0 space-y-6">
           <div className="text-center">
@@ -122,13 +95,12 @@ const Register = () => {
             selectedRole={selectedRole}
             role={roles}
           />
-        </div>{" "}
-        {/* Name Fields (row) */}
+        </div>
+
         {/* Footer Actions (Sign In / Register) */}
         <div className="w-full bg-gray-50 p-6 flex justify-between items-center rounded-b-xl border-t border-gray-200 mt-auto">
           <Link to="/login">
             <button className="flex items-center gap-2 text-base font-semibold text-gray-700 hover:text-gray-950 transition duration-150">
-              {/* Sign in icon representation */}
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="h-5 w-5"
@@ -148,7 +120,6 @@ const Register = () => {
             onClick={handleClick}
             className="flex items-center gap-2.5 px-10 py-3.5 bg-blue-700 text-white font-semibold rounded-lg hover:bg-blue-800 transition duration-150 text-base"
           >
-            {/* Register icon representation */}
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="h-5 w-5"

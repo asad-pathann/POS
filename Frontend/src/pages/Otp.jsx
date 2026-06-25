@@ -1,20 +1,27 @@
-// Otp.jsx
 import React, { useState, useRef, useEffect } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux"; // useDispatch add kiya state handle karne ke liye
 import { useNavigate } from "react-router-dom";
+import { userReset } from "../feature/UserSlice"; // Agar OTP sahi ho jaye toh register state saaf karne ke liye
+import toast from "react-hot-toast";
 
 const Otp = () => {
+  // Redux se user object nikala jisme backend se aaya JSON data (with OTP) hai
   const { user } = useSelector((state) => state.auth);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const inputRefs = useRef([]);
 
+  // Auto-focus pehle input par
   useEffect(() => {
     inputRefs.current[0]?.focus();
-  }, []);
+
+    // Console check karne ke liye ki backend se JSON mein kya data aaya hai
+    console.log("Backend response stored in Redux:", user);
+  }, [user]);
 
   const handleChange = (index, value) => {
     if (!/^\d*$/.test(value)) return;
@@ -46,27 +53,39 @@ const Otp = () => {
 
   const isOtpComplete = otp.every((digit) => digit !== "");
 
-  const handleOtp = async () => {
+  // ==== OTP Redux Match Logic ====
+  const handleOtpSubmit = async (e) => {
+    if (e) e.preventDefault(); // Form reload roko
+
     setError("");
     setLoading(true);
 
-    const enteredOtp = otp.join("");
-    const storedOtp = user?.otp; // yahan se user ka OTP mil raha hai (Redux se)
+    const enteredOtp = otp.join(""); // Jo user ne boxes mein type kiya
 
-    // Optional: agar real API call karna ho to yahan fetch/axios use karo
-    // abhi simple check kar rahe hain
+    // JSON response ke andar jo backend ne OTP bheja tha (e.g., user.otp)
+    const backendOtp = user?.otp;
 
-    await new Promise((resolve) => setTimeout(resolve, 1000)); // fake delay
+    // Chota sa fake delay achi UI feel ke liye
+    await new Promise((resolve) => setTimeout(resolve, 800));
 
-    // let myotp = user?.otp;
+    // Redux wale OTP aur typed OTP ko aapas mein match kiya
+    if (enteredOtp === String(backendOtp)) {
+      toast.success("Verification Successful!");
 
-    if (enteredOtp === storedOtp) {
-      // OTP match ho gaya
-      navigate("product_card"); // redirect to work page
+      // Role ke hisab se routing
+      if (user?.role === "admin") {
+        navigate("/dashbord");
+      } else {
+        navigate("/product-card");
+      }
+
+      // Agle page par jaane ke baad register state reset kar do
     } else {
+      // Agar OTP match na ho
+      toast.error("Invalid Code!");
       setError("Invalid OTP. Please try again.");
-      setOtp(["", "", "", "", "", ""]); // clear inputs
-      inputRefs.current[0]?.focus();
+      setOtp(["", "", "", "", "", ""]); // Inputs khali karo
+      inputRefs.current[0]?.focus(); // Wapas pehle box par focus
     }
 
     setLoading(false);
@@ -80,16 +99,11 @@ const Otp = () => {
             Verify Your Email
           </h2>
           <p className="text-gray-600 mt-2">
-            We sent a 6-digit code to your email
+            We sent a 6-digit code to **{user?.email || "your email"}**
           </p>
         </div>
 
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            handleOtp(); // form submit par bhi verify karo
-          }}
-        >
+        <form onSubmit={handleOtpSubmit}>
           <div className="flex justify-center gap-4 mb-8" onPaste={handlePaste}>
             {otp.map((digit, index) => (
               <input
@@ -100,12 +114,11 @@ const Otp = () => {
                 onChange={(e) => handleChange(index, e.target.value)}
                 onKeyDown={(e) => handleKeyDown(index, e)}
                 ref={(el) => (inputRefs.current[index] = el)}
-                className="w-14 h-14 text-center text-2xl font-bold border-2 rounded-lg focus:border-blue-500 focus:outline-none transition-all"
+                className="w-12 h-12 text-center text-2xl font-bold border-2 rounded-lg focus:border-blue-500 focus:outline-none transition-all"
               />
             ))}
           </div>
 
-          {/* Error Message */}
           {error && (
             <p className="text-red-600 text-center mb-4 font-medium">{error}</p>
           )}
@@ -113,7 +126,6 @@ const Otp = () => {
           <button
             type="submit"
             disabled={!isOtpComplete || loading}
-            onClick={handleOtp}
             className={`w-full py-3 rounded-lg font-semibold text-white transition-all
               ${
                 isOtpComplete && !loading
@@ -128,7 +140,10 @@ const Otp = () => {
         <div className="text-center mt-6">
           <p className="text-gray-600">
             Didn't receive the code?{" "}
-            <button className="text-blue-600 font-medium hover:underline">
+            <button
+              type="button"
+              className="text-blue-600 font-medium hover:underline"
+            >
               Resend Code
             </button>
           </p>

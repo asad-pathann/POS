@@ -8,6 +8,7 @@ import { ConnectDb } from "./Connection/Connect.js";
 import { OrderRoutes } from "./Routes/orderRoutes.js";
 import { productRouter } from "./Routes/ProductRouter.js";
 import { PaymentRoute } from "./Routes/paymentRouter.js";
+import { router } from "./Routes/CategoryRoute.js";
 
 dotenv.config();
 
@@ -23,6 +24,7 @@ app.use("/api/orders", OrderRoutes);
 app.use("/api/products", productRouter);
 
 app.use("/api/payments", PaymentRoute);
+app.use("/api/categoryes", router);
 
 app.use(authHandler);
 app.listen(process.env.PORT, () =>

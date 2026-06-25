@@ -14,6 +14,8 @@ import Dashbord from "./pages/Dashbord";
 import ProductCard from "./pages/ProductCard";
 import OrderSection from "./pages/OrderSection";
 import GetOrder from "./Components/produts/orders/GetOrder";
+import CategoryPage from "./pages/CategoryPage";
+import Otp from "./pages/Otp";
 
 const app = () => {
   return (
@@ -28,7 +30,7 @@ const app = () => {
 
           <Route path="/login" element={<Login />} />
 
-          {/* <Route path="/otp" element={<Otp />} /> */}
+          <Route path="/otp" element={<Otp />} />
 
           <Route path="/product" element={<SellProducts />} />
 
@@ -38,6 +40,7 @@ const app = () => {
           <Route path="/card-product" element={<ProductCard />} />
           <Route path="/order-card" element={<OrderSection />} />
           <Route path="/get-order" element={<GetOrder />} />
+          <Route path="/category" element={<CategoryPage />} />
         </Routes>
       </Router>
     </>

@@ -45,7 +45,7 @@ export const LogOut = () => {
       <div className="space-y-1">
         <button
           onClick={navigateUser}
-          className="w-full flex items-center justify-between px-3 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg"
+          className={`w-full flex items-center justify-between px-3 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg ${user?.role !== "admin" ? "hidden" : "block"}`}
         >
           <span>My Profile</span>
           <span>→</span>

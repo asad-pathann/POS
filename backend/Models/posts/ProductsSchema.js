@@ -6,12 +6,16 @@ const ProductSchema = mongoose.Schema(
       type: String,
       required: [true, "Enter The Product Name "],
     },
-
     user_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      require: true,
+      required: true, // 👈 'require' ko 'required' kar diya
     },
+    // category: {
+    //   type: mongoose.Schema.Types.ObjectId,
+    //   ref: "Category",
+    //   required: [true, "Product category is required"], // Isko bhi required rakhna behtar hai
+    // },
     image: {
       type: String,
       default: "",
@@ -23,22 +27,11 @@ const ProductSchema = mongoose.Schema(
       type: Number,
       required: [true, "Enter The price "],
     },
-
     stock: {
       type: Number,
       required: true,
       default: 0,
     },
-
-    category: {
-      type: String,
-    },
-
-    // barcode: {
-    //   type: String,
-    //   unique: true,
-    //   required: true,
-    // },
   },
   {
     timestamps: true,

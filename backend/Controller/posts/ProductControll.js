@@ -51,22 +51,15 @@ export const CreateProduct = async (req, res) => {
 // Get All Products ====
 
 export const getAllProducts = async (req, res) => {
-  //
+  try {
+    const getAll = await Product.find(); // 🔥 category name aayega
 
-  // const { user_id } = req.params;
-  // const user = await User.findById(user_id);
-  // // find the user role ==
-
-  // if (user.role !== "admin") {
-  //   res.status(400).json("Only Admin Get The Products");
-  // }
-
-  // // get the all products
-
-  const getAll = await Product.find();
-  // .populate("user_id")
-  // .sort({ createAt: -1 });
-  res.send(getAll);
+    res.status(200).json(getAll);
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
 };
 
 // get  One Products ===

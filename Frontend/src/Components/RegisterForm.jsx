@@ -87,7 +87,7 @@ const RegisterForm = ({
               name="role"
               key={role}
               onClick={() => setSelectedRole(role)}
-              className={`flex-1 text-center py-2.5 rounded-md font-medium text-base transition-colors duration-150 
+              className={`flex-1 text-center py-2.5 rounded-md capitalize text-lg font-medium text-base transition-colors duration-150 
                     ${
                       selectedRole === role
                         ? "bg-white text-blue-700 shadow-sm"

@@ -30,35 +30,79 @@ import {
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { FaEdit, FaTrashAlt } from "react-icons/fa";
-
-// 1. useDispatch ko import kiya
 import { useSelector, useDispatch } from "react-redux";
 
-// 2. Slices se fetch karne wale actions ko import kiya
-import { getProduct_Slice } from "../feature/productsSlice";
+// Slices aur Actions
+import {
+  deleteProduct_Slice,
+  getProduct_Slice,
+} from "../feature/productsSlice";
 import { get_order_slice } from "../feature/orderSlice";
+import UpdateForm from "../Components/produts/UpdateForm";
+import axios from "axios";
 
 export default function Dashbord() {
   const navigate = useNavigate();
-  const dispatch = useDispatch(); // Dispatch hook call kiya
+  const dispatch = useDispatch();
+
+  // Modal aur Editing States
+  const [open, setOpen] = useState(false);
+  const [editItem, setEditItem] = useState(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Auth State
   const { user } = useSelector((state) => state.auth);
 
-  // Redux Products State
+  // Redux Products & Orders State
   const product = useSelector((state) => state.products?.product || []);
   const productLoading = useSelector(
     (state) => state.products?.productLoading || false,
   );
-  // Redux Orders State (Masla 3 Fixed: 'orders' ko pull kiya jo array hai)
   const { orders, orderLoading } = useSelector((state) => state.orders);
 
-  console.log({
-    orders,
-    product,
-  });
+  // 1. DELETE HANDLER
+  const handleDelete = (item) => {
+    if (!item?._id || !user?._id) return;
+    if (window.confirm("Kya aap waqai yeh product delete karna chahte hain?")) {
+      dispatch(
+        deleteProduct_Slice({
+          product_id: item._id,
+          user_id: user._id,
+        }),
+      );
+    }
+  };
 
-  // 3. User check aur Data Loading ek hi useEffect mein handle ki
+  // 2. UPDATE HANDLER (Form submit hone par chalega)
+  const handleUpdate = async (updatedData) => {
+    try {
+      // API call jo database mein product update karegi
+      await axios.put(
+        `http://localhost:8888/api/products/update-product/${editItem?._id}/${user?._id}`,
+        updatedData, // Jo data user ne form mein edit kiya
+      );
+
+      // Modal ko close karo aur state clear karo
+      setOpen(false);
+      setEditItem(null);
+
+      // Redux store se fresh list dobara mangwao taake UI update ho jaye
+      dispatch(getProduct_Slice());
+
+      alert("Product kamyabi se update ho gaya!");
+    } catch (error) {
+      console.error("Update failed:", error);
+      alert("Product update karne mein masla aya.");
+    }
+  };
+
+  // 3. EDIT BUTTON CLICK HANDLER (Sirf modal open karega aur data set karega)
+  const handleEditClick = (item) => {
+    setEditItem(item); // Selected product ka data state mein save kiya
+    setOpen(true); // Modal open kiya
+  };
+
+  // Auth & Initial Data Fetching
   useEffect(() => {
     if (!user) {
       navigate("/");
@@ -70,14 +114,11 @@ export default function Dashbord() {
       return;
     }
 
-    // Agar admin logged in hai, to data fetch karo
     if (user && user.role === "admin") {
       dispatch(getProduct_Slice());
       dispatch(get_order_slice());
     }
   }, [navigate, user, dispatch]);
-
-  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
     <div className="flex h-screen bg-[#F8F9FA] text-[#1A1C1E] font-sans antialiased overflow-hidden">
@@ -88,7 +129,7 @@ export default function Dashbord() {
         <div>
           <div className="max-w-3xl mx-start w-full -mt-3 pt-4 border-t border-slate-200 flex justify-center">
             <button
-              onClick={() => navigate(-1)} // -1 likhne se user wapas pichle route par chala jayega, ya yahan apna route path "/" likh dein
+              onClick={() => navigate(-1)}
               className="inline-flex items-center gap-2 px-6 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-medium text-sm rounded-lg shadow-sm transition-all duration-200 group active:scale-95"
             >
               <ArrowLeft
@@ -194,37 +235,28 @@ export default function Dashbord() {
               />
             </div>
           </div>
-          <div className="flex items-center justify-between px-2 py-3 mb-6">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center text-white font-bold text-lg">
-                F
-              </div>
-              <span className="font-bold text-lg tracking-tight">
-                Fixoria sales
-              </span>
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center text-white font-bold text-lg">
+              F
             </div>
-            <button className="lg:hidden" onClick={() => setSidebarOpen(false)}>
-              <X size={20} className="text-gray-500" />
-            </button>
+            <span className="font-bold text-lg tracking-tight">
+              Fixoria sales
+            </span>
           </div>
         </header>
 
         <main className="flex-1 overflow-y-auto p-4 lg:p-8">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
             <h1 className="text-xl font-bold tracking-tight">Products List</h1>
-
-            <div className="flex items-center gap-2 self-end sm:self-auto">
-              <Link to={"/product"}>
-                <button className="flex items-center gap-1.5 px-3 py-2 bg-[#6320EE] text-white rounded-lg text-sm font-medium hover:bg-[#5119C7] shadow-sm">
-                  <Plus size={16} /> Add Product
-                </button>
-              </Link>
-            </div>
+            <Link to={"/product"}>
+              <button className="flex items-center gap-1.5 px-3 py-2 bg-[#6320EE] text-white rounded-lg text-sm font-medium hover:bg-[#5119C7] shadow-sm">
+                <Plus size={16} /> Add Product
+              </button>
+            </Link>
           </div>
 
           {/* --- TABLE CARD --- */}
           <div className="bg-white border border-[#E9ECEF] rounded-xl shadow-sm overflow-hidden">
-            {/* Loading State Handle Kiya */}
             {productLoading ? (
               <div className="p-8 text-center text-gray-500 font-medium">
                 Loading Products...
@@ -234,9 +266,7 @@ export default function Dashbord() {
                 <table className="w-full text-left border-collapse min-w-[800px]">
                   <thead>
                     <tr className="bg-[#F8F9FA] border-b border-[#E9ECEF] text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                      <th className="p-4 w-12">
-                        <input type="checkbox" className="rounded" />
-                      </th>
+                      <th className="p-4 w-12"></th>
                       <th className="p-4">Product Name</th>
                       <th className="p-4">Category</th>
                       <th className="p-4">Stock</th>
@@ -246,16 +276,13 @@ export default function Dashbord() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#E9ECEF] text-sm font-medium">
-                    {/* Masla 2 Fixed: Ab Loop Redux se aane wale 'product' array par chalega */}
                     {product && product.length > 0 ? (
                       product.map((item) => (
                         <tr
                           key={item._id || item.id}
                           className="hover:bg-gray-50/50 transition-colors"
                         >
-                          <td className="p-4">
-                            <input type="checkbox" className="rounded" />
-                          </td>
+                          <td className="p-4"></td>
                           <td className="p-4">
                             <div className="flex items-center gap-3">
                               <img
@@ -264,8 +291,7 @@ export default function Dashbord() {
                                   item?.image ||
                                   "https://via.placeholder.com/40"
                                 }
-                                className="w-10 h-10 rounded-lg object-cover
-                                bg-gray-100"
+                                className="w-20 h-15 rounded-lg object-cover bg-gray-100"
                                 alt={item?.name || "product"}
                               />
                               <span className="text-gray-900 font-semibold">
@@ -287,8 +313,8 @@ export default function Dashbord() {
                               {item.stock}
                             </span>
                           </td>
-                          <td className="p-4 text-gray-900 flex  px-3">
-                            <span>PKR{item.price}</span>
+                          <td className="p-4 text-gray-900">
+                            <span>PKR {item.price}</span>
                           </td>
                           <td className="p-4">
                             <StatusBadge
@@ -296,20 +322,16 @@ export default function Dashbord() {
                               type={item.statusColor || "green"}
                             />
                           </td>
-                          <td className="p-4 flex  gap-3  items-center text-center">
+                          <td className="p-4 flex gap-3 items-center justify-center">
                             <button
-                              style={{
-                                clipPath: "circle",
-                              }}
-                              className="text-red-400 h-[40px] w-[40px]  rounded-full cursor-pointer  flex items-center justify-center bg-gray-100 hover:text-red-600 p-1 "
+                              onClick={() => handleDelete(item)}
+                              className="text-red-400 h-10 w-10 rounded-full cursor-pointer flex items-center justify-center bg-gray-100 hover:text-red-600 p-1"
                             >
                               <FaTrashAlt />
                             </button>
                             <button
-                              style={{
-                                clipPath: "circle",
-                              }}
-                              className="text-green-400 h-[40px] w-[40px]  rounded-full cursor-pointer  flex items-center justify-center bg-gray-100 hover:text-green-600 p-1 "
+                              onClick={() => handleEditClick(item)}
+                              className="text-green-400 h-10 w-10 rounded-full cursor-pointer flex items-center justify-center bg-gray-100 hover:text-green-600 p-1"
                             >
                               <FaEdit />
                             </button>
@@ -333,6 +355,17 @@ export default function Dashbord() {
           </div>
         </main>
       </div>
+
+      {/* --- GLOBAL UPDATE MODAL --- */}
+      {/* Table loop se bahar nikal diya taake sirf ek hi modal pure page par maintain ho */}
+      {open && editItem && (
+        <UpdateForm
+          handleUpdate={handleUpdate}
+          open={open}
+          setOpen={setOpen}
+          item={editItem}
+        />
+      )}
     </div>
   );
 }
@@ -357,6 +390,7 @@ function SidebarLink({ icon, label, active, dropdown, children }) {
   );
 }
 
+// Fixed syntax issue here
 function StatusBadge({ status, type }) {
   const styles = {
     green: "bg-emerald-50 text-emerald-700 border-emerald-200/60",

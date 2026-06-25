@@ -1,28 +1,21 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import {
-  deleteProduct,
-  getProduct,
   Product_post,
+  getProduct,
   updateProducts,
+  deleteProduct,
 } from "./Product_servies";
-
-const initialState = {
-  product: [],
-  productLoading: false,
-  productMessage: "",
-  productSuccess: false,
-  productError: false,
-};
 
 // CREATE PRODUCT
 export const productPost = createAsyncThunk(
-  "product/post",
+  "product/create",
   async (productData, thunkAPI) => {
     try {
-      return await Product_post(productData);
+      const res = await Product_post(productData);
+      return res;
     } catch (error) {
       return thunkAPI.rejectWithValue(
-        error.response?.data?.error || error.message,
+        error.response?.data?.message || error.message,
       );
     }
   },
@@ -35,56 +28,57 @@ export const getProduct_Slice = createAsyncThunk(
     try {
       return await getProduct();
     } catch (error) {
-      return thunkAPI.rejectWithValue(
-        error.response?.data?.error || error.message,
-      );
+      return thunkAPI.rejectWithValue(error.message);
     }
   },
 );
 
-// UPDATE PRODUCT
+// UPDATE
 export const updateProduct_Slice = createAsyncThunk(
   "product/update",
-  async (productData, thunkAPI) => {
+  async (data, thunkAPI) => {
     try {
-      return await updateProducts(productData);
+      return await updateProducts(data);
     } catch (error) {
-      return thunkAPI.rejectWithValue(
-        error.response?.data?.error || error.message,
-      );
+      return thunkAPI.rejectWithValue(error.message);
     }
   },
 );
 
-// DELETE PRODUCT
+// DELETE
 export const deleteProduct_Slice = createAsyncThunk(
   "product/delete",
-  async (productData, thunkAPI) => {
+  async (data, thunkAPI) => {
     try {
-      return await deleteProduct(productData);
+      await deleteProduct(data);
+      return { _id: data.product_id };
     } catch (error) {
-      return thunkAPI.rejectWithValue(
-        error.response?.data?.error || error.message,
-      );
+      return thunkAPI.rejectWithValue(error.message);
     }
   },
 );
 
 const productSlice = createSlice({
   name: "product",
-  initialState,
+  initialState: {
+    product: [],
+    productLoading: false,
+    productSuccess: false,
+    productError: false,
+    productMessage: "",
+  },
 
   reducers: {
     productReset: (state) => {
       state.productLoading = false;
-      state.productMessage = "";
       state.productSuccess = false;
       state.productError = false;
+      state.productMessage = "";
     },
   },
 
   extraReducers: (builder) => {
-    // CREATE PRODUCT
+    // CREATE
     builder
       .addCase(productPost.pending, (state) => {
         state.productLoading = true;
@@ -92,9 +86,8 @@ const productSlice = createSlice({
       .addCase(productPost.fulfilled, (state, action) => {
         state.productLoading = false;
         state.productSuccess = true;
-        state.productMessage = "Product Added Successfully";
 
-        state.product.push(action.payload);
+        state.product.push(action.payload); // ✅ safe
       })
       .addCase(productPost.rejected, (state, action) => {
         state.productLoading = false;
@@ -102,62 +95,26 @@ const productSlice = createSlice({
         state.productMessage = action.payload;
       });
 
-    // GET PRODUCTS
-    builder
-      .addCase(getProduct_Slice.pending, (state) => {
-        state.productLoading = true;
-      })
-      .addCase(getProduct_Slice.fulfilled, (state, action) => {
-        state.productLoading = false;
-        state.productSuccess = true;
-        state.product = action.payload;
-      })
-      .addCase(getProduct_Slice.rejected, (state, action) => {
-        state.productLoading = false;
-        state.productError = true;
-        state.productMessage = action.payload;
-      });
+    // GET
+    builder.addCase(getProduct_Slice.fulfilled, (state, action) => {
+      state.product = action.payload;
+    });
 
-    // UPDATE PRODUCT
-    builder
-      .addCase(updateProduct_Slice.pending, (state) => {
-        state.productLoading = true;
-      })
-      .addCase(updateProduct_Slice.fulfilled, (state, action) => {
-        state.productLoading = false;
-        state.productSuccess = true;
+    // UPDATE
+    builder.addCase(updateProduct_Slice.fulfilled, (state, action) => {
+      state.product = state.product.map((item) =>
+        item._id === action.payload._id ? action.payload : item,
+      );
+    });
 
-        state.product = state.product.map((item) =>
-          item._id === action.payload._id ? action.payload : item,
-        );
-      })
-      .addCase(updateProduct_Slice.rejected, (state, action) => {
-        state.productLoading = false;
-        state.productError = true;
-        state.productMessage = action.payload;
-      });
-
-    // DELETE PRODUCT
-    builder
-      .addCase(deleteProduct_Slice.pending, (state) => {
-        state.productLoading = true;
-      })
-      .addCase(deleteProduct_Slice.fulfilled, (state, action) => {
-        state.productLoading = false;
-        state.productSuccess = true;
-
-        state.product = state.product.filter(
-          (item) => item._id !== action.payload._id,
-        );
-      })
-      .addCase(deleteProduct_Slice.rejected, (state, action) => {
-        state.productLoading = false;
-        state.productError = true;
-        state.productMessage = action.payload;
-      });
+    // DELETE
+    builder.addCase(deleteProduct_Slice.fulfilled, (state, action) => {
+      state.product = state.product.filter(
+        (item) => item._id !== action.payload._id,
+      );
+    });
   },
 });
 
 export const { productReset } = productSlice.actions;
-
 export default productSlice.reducer;

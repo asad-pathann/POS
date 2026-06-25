@@ -14,7 +14,7 @@ const SellProducts = () => {
     name: "",
     category: "",
     price: "",
-    barCode: "",
+    // barCode: "",
     stock: "",
     des: "",
   });
@@ -23,7 +23,7 @@ const SellProducts = () => {
   const [loading, setLoading] = useState(false);
   const [image, setImage] = useState("");
 
-  const { name, category, des, stock, price, barCode } = control;
+  const { name, category, des, stock, price } = control;
   const { user } = useSelector((state) => state.auth);
 
   const dispatch = useDispatch();
@@ -75,13 +75,17 @@ const SellProducts = () => {
         image: imageUrl,
       };
 
-      await dispatch(productPost(productData)).unwrap();
+      // await dispatch(productPost(productData)).unwrap();
+      let response = await axios.post(
+        `http://localhost:8888/api/products/post-product/${productData?.user_id}`,
+        productData,
+      );
+      return response.data;
       setControl({
         name: "",
         price: "",
         stock: "",
         des: "",
-
         category: "",
       });
 
@@ -137,6 +141,7 @@ const SellProducts = () => {
     <div className="bg-[#F8FAFC] min-h-screen w-full pb-32 font-sans text-slate-900 selection:bg-blue-500 selection:text-white">
       {/* ================= PREMIUM TOP NAVBAR ================= */}
       <Nav />
+
       <Link></Link>
 
       {/* ================= MAIN FORM CONTENT ================= */}
@@ -267,7 +272,7 @@ const SellProducts = () => {
               />
             </div>
 
-            <div className="space-y-2">
+            {/* <div className="space-y-2">
               <label className="text-xs font-black uppercase tracking-wider text-slate-500 ml-1">
                 Barcode / SKU
               </label>
@@ -279,7 +284,7 @@ const SellProducts = () => {
                 placeholder="Enter barcode"
                 className="w-full bg-white border border-slate-200 rounded-2xl py-4 px-6 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-200 outline-none placeholder:text-slate-400 text-slate-800 font-medium shadow-sm"
               />
-            </div>
+            </div> */}
           </div>
 
           {/* Description */}

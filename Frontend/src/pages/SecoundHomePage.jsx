@@ -12,6 +12,9 @@ const SecoundHomePage = ({ productData }) => {
   const [open, setOpen] = useState(false);
   const [storeData, setStoreData] = useState([]);
 
+  // SEARCH STATE: User ka input store karne ke liye
+  const [searchQuery, setSearchQuery] = useState("");
+
   useEffect(() => {
     console.log("useEffect chal gaya");
 
@@ -32,12 +35,16 @@ const SecoundHomePage = ({ productData }) => {
     if (!user) {
       navigate("/");
     }
-  }, []);
+  }, [user, navigate]); // Added standard dependencies
 
-  // Is function se dropdown toggle (khulega/band hoga) hoga
   const handleToggle = () => {
     setOpen(!open);
   };
+
+  // SEARCH FILTER LOGIC: Jo products ke name se match karega wahi filter hoga
+  const filteredProducts = storeData?.filter((item) =>
+    item.name?.toLowerCase().includes(searchQuery.toLowerCase()),
+  );
 
   return (
     <div className="flex bg-[#eff0f5] min-h-screen w-full font-sans antialiased">
@@ -50,7 +57,9 @@ const SecoundHomePage = ({ productData }) => {
               Luxury <span className="text-[#f57224]">Marketplace</span>
             </h2>
             <p className="text-[11px] text-gray-400 font-medium">
-              Showing results for "All Categories"
+              {searchQuery
+                ? `Showing results for "${searchQuery}"`
+                : 'Showing results for "All Categories"'}
             </p>
           </div>
 
@@ -60,6 +69,8 @@ const SecoundHomePage = ({ productData }) => {
               <input
                 type="text"
                 placeholder="Search in Daraz..."
+                value={searchQuery} // Input ko state se connect kiya
+                onChange={(e) => setSearchQuery(e.target.value)} // State update on typing
                 className="w-full bg-[#eff0f5] border border-transparent py-2 pl-11 pr-4 rounded-sm focus:bg-white focus:border-[#f57224] outline-none transition-all text-xs font-medium"
               />
             </div>
@@ -67,7 +78,6 @@ const SecoundHomePage = ({ productData }) => {
               <FaFilter size={14} />
             </button>
 
-            {/* FIX 1: Is wrapper ko humne "relative" aur cursor-pointer kiya hai */}
             <div
               onClick={handleToggle}
               className="relative flex items-center gap-2 pl-3 border-l border-gray-200 cursor-pointer select-none"
@@ -87,7 +97,6 @@ const SecoundHomePage = ({ productData }) => {
                 alt="Profile"
               />
 
-              {/* FIX 2: Dropdown condition ab button ke content ke bahar, lekin 'relative' parent ke andar hai */}
               {open && (
                 <div className="absolute right-0 top-full mt-2 w-[300px] z-50">
                   <LogOut />
@@ -124,13 +133,14 @@ const SecoundHomePage = ({ productData }) => {
             {[
               "All Items",
               "Technology",
-              "Fashion",
+              "Category",
               "Lifestyle",
               "Office",
               "Travel",
             ].map((tab, i) => (
-              <button
+              <Link
                 key={tab}
+                to={`/category`}
                 className={`px-4 py-1.5 whitespace-nowrap text-xs transition-all ${
                   i === 0
                     ? "bg-[#f57224] text-white font-bold"
@@ -138,7 +148,7 @@ const SecoundHomePage = ({ productData }) => {
                 }`}
               >
                 {tab}
-              </button>
+              </Link>
             ))}
           </div>
           <button className="text-gray-500 text-xs flex items-center gap-1 hover:text-[#f57224] transition-colors whitespace-nowrap pr-2">
@@ -146,49 +156,58 @@ const SecoundHomePage = ({ productData }) => {
           </button>
         </div>
 
-        {/* PRODUCT GRID */}
+        {/* PRODUCT GRID - Ab storeData ki jagah filteredProducts render hoga */}
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
-          {storeData?.map((item) => {
-            return (
-              <div
-                key={item._id}
-                className={`bg-white hover:shadow-lg transition-shadow duration-200 cursor-pointer flex flex-col justify-between group ${
-                  productData?.stock === 0 && "hidden"
-                }`}
-              >
-                <Link to="/card-product" state={item}>
-                  <div>
-                    <div className="relative w-full aspect-square bg-white overflow-hidden flex items-center justify-center p-2">
-                      <img
-                        src={item.image}
-                        alt={item.name}
-                        className="max-w-full max-h-full object-fill group-hover:scale-[1.02] transition-transform duration-300"
-                      />
+          {filteredProducts?.length > 0 ? (
+            filteredProducts.map((item) => {
+              return (
+                <div
+                  key={item._id}
+                  className={`bg-white hover:shadow-lg transition-shadow duration-200 cursor-pointer flex flex-col justify-between group ${
+                    productData?.stock === 0 ? "hidden" : "block"
+                  }`}
+                >
+                  <Link to="/card-product" state={item}>
+                    <div>
+                      <div className="relative w-full aspect-square bg-white overflow-hidden flex items-center justify-center p-2">
+                        <img
+                          src={item.image}
+                          alt={item.name}
+                          className="max-w-full max-h-full object-fill group-hover:scale-[1.02] transition-transform duration-300"
+                        />
+                      </div>
+
+                      <div className="p-2.5 pb-1">
+                        <h3 className="text-xs text-gray-800">{item.name}</h3>
+                      </div>
                     </div>
 
-                    <div className="p-2.5 pb-1">
-                      <h3 className="text-xs text-gray-800">{item.name}</h3>
+                    <div className="p-2.5 pt-0 mt-auto">
+                      <div className="text-[#f57224] text-base font-medium">
+                        Rs.{item.price}
+                      </div>
                     </div>
-                  </div>
-
-                  <div className="p-2.5 pt-0 mt-auto">
-                    <div className="text-[#f57224] text-base font-medium">
-                      Rs.{item.price}
-                    </div>
-                  </div>
-                </Link>
-              </div>
-            );
-          })}
+                  </Link>
+                </div>
+              );
+            })
+          ) : (
+            // Jab koi product match na ho toh empty state message dikhane ke liye
+            <div className="col-span-full text-center py-12 text-sm text-gray-400 bg-white shadow-sm">
+              No products found matching "{searchQuery}"
+            </div>
+          )}
         </div>
 
         {/* BOTTOM PAGINATION */}
-        <div className="mt-8 flex justify-center">
-          <button className="flex items-center gap-1.5 bg-white border border-gray-300 px-10 py-2 text-gray-800 text-xs font-medium hover:border-[#f57224] hover:text-[#f57224] transition-all">
-            Load More Products{" "}
-            <FaChevronDown size={10} className="text-gray-400" />
-          </button>
-        </div>
+        {filteredProducts?.length > 0 && (
+          <div className="mt-8 flex justify-center">
+            <button className="flex items-center gap-1.5 bg-white border border-gray-300 px-10 py-2 text-gray-800 text-xs font-medium hover:border-[#f57224] hover:text-[#f57224] transition-all">
+              Load More Products{" "}
+              <FaChevronDown size={10} className="text-gray-400" />
+            </button>
+          </div>
+        )}
       </main>
     </div>
   );
