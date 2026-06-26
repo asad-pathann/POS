@@ -1,4 +1,5 @@
 import { FaArrowLeft } from "react-icons/fa";
+import { useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 
 const navItems = [
@@ -10,6 +11,7 @@ const navItems = [
 
 export const Navbar = () => {
   const navigate = useNavigate();
+  const { user } = useSelector((state) => state.auth);
 
   return (
     <header className="sticky top-0 z-50 bg-white border-b border-gray-100 px-4 py-3 shadow-sm">
@@ -61,7 +63,7 @@ export const Navbar = () => {
 
           <Link to="/register">
             <button className="bg-[#1E3A8A] text-white px-5 py-2 rounded-full text-sm font-bold hover:bg-blue-800 transition">
-              Sign In
+              {user?.role ? "" : " Sign In"}
             </button>
           </Link>
         </div>

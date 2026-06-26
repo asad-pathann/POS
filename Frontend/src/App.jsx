@@ -16,6 +16,8 @@ import OrderSection from "./pages/OrderSection";
 import GetOrder from "./Components/produts/orders/GetOrder";
 import CategoryPage from "./pages/CategoryPage";
 import Otp from "./pages/Otp";
+import ShopPage from "./pages/ShopPage";
+import AboutPage from "./pages/AboutPage";
 
 const app = () => {
   return (
@@ -41,6 +43,8 @@ const app = () => {
           <Route path="/order-card" element={<OrderSection />} />
           <Route path="/get-order" element={<GetOrder />} />
           <Route path="/category" element={<CategoryPage />} />
+          <Route path="/shop-page" element={<ShopPage />} />
+          <Route path="/about-page" element={<AboutPage />} />
         </Routes>
       </Router>
     </>

@@ -40,6 +40,7 @@ import {
 import { get_order_slice } from "../feature/orderSlice";
 import UpdateForm from "../Components/produts/UpdateForm";
 import axios from "axios";
+import toast from "react-hot-toast";
 
 export default function Dashbord() {
   const navigate = useNavigate();
@@ -89,7 +90,7 @@ export default function Dashbord() {
       // Redux store se fresh list dobara mangwao taake UI update ho jaye
       dispatch(getProduct_Slice());
 
-      alert("Product kamyabi se update ho gaya!");
+      toast.success("product Successfuly update");
     } catch (error) {
       console.error("Update failed:", error);
       alert("Product update karne mein masla aya.");
