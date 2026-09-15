@@ -5,6 +5,7 @@ import { useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { LogOut } from "../Components/LogOut";
+import HomeNavbar from "../Components/HomeNavbar";
 
 const SecoundHomePage = ({ productData }) => {
   const { user } = useSelector((state) => state.auth);
@@ -49,65 +50,16 @@ const SecoundHomePage = ({ productData }) => {
   return (
     <div className="flex bg-[#eff0f5] min-h-screen w-full font-sans antialiased">
       {/* MAIN CONTENT AREA */}
-      <main className="flex-1 px-3 sm:px-4 lg:px-6 py-4 overflow-x-hidden">
-        {/* TOP NAVBAR */}
-        <header className="flex flex-col md:flex-row justify-between items-center gap-4 mb-5 bg-white p-4 shadow-sm">
-          <div>
-            <h2 className="text-2xl font-black text-gray-900 tracking-tight">
-              Luxury <span className="text-[#f57224]">Marketplace</span>
-            </h2>
-            <p className="text-[11px] text-gray-400 font-medium">
-              {searchQuery
-                ? `Showing results for "${searchQuery}"`
-                : 'Showing results for "All Categories"'}
-            </p>
-          </div>
-
-          <div className="flex items-center gap-3 w-full md:w-auto">
-            <div className="relative flex-1 md:w-[380px] group">
-              <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#f57224] transition-colors" />
-              <input
-                type="text"
-                placeholder="Search in Daraz..."
-                value={searchQuery} // Input ko state se connect kiya
-                onChange={(e) => setSearchQuery(e.target.value)} // State update on typing
-                className="w-full bg-[#eff0f5] border border-transparent py-2 pl-11 pr-4 rounded-sm focus:bg-white focus:border-[#f57224] outline-none transition-all text-xs font-medium"
-              />
-            </div>
-            <button className="bg-[#eff0f5] p-2.5 text-gray-500 hover:text-[#f57224] transition-all">
-              <FaFilter size={14} />
-            </button>
-
-            <div
-              onClick={handleToggle}
-              className="relative flex items-center gap-2 pl-3 border-l border-gray-200 cursor-pointer select-none"
-            >
-              <div className="text-right hidden sm:block">
-                <p className="text-xs font-bold text-gray-900 leading-none">
-                  {user?.f_name} {user?.l_name || ""}
-                </p>
-                <p className="text-[9px] text-[#f57224] font-extrabold uppercase mt-1">
-                  Pro Member
-                </p>
-              </div>
-
-              <img
-                src="https://ui-avatars.com/api/?name=Asad&background=f57224&color=fff"
-                className="w-8 h-8 rounded-full border border-gray-100 shadow-sm"
-                alt="Profile"
-              />
-
-              {open && (
-                <div className="absolute right-0 top-full mt-2 w-[300px] z-50">
-                  <LogOut />
-                </div>
-              )}
-            </div>
-          </div>
-        </header>
-
+      <main className="flex-1 sm:px-4 lg:px-6  w-full overflow-x-hidden">
+        <HomeNavbar
+          className="w-full"
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          handleToggle={handleToggle}
+          open={open}
+        />
         {/* PROMO BANNER */}
-        <div className="hidden xl:flex bg-gradient-to-r from-orange-600 to-[#f57224] p-8 mb-6 items-center justify-between text-white shadow-sm relative overflow-hidden">
+        <div className="hidden xl:flex bg-gradient-to-r  h-[350px] mt-5 from-orange-600 to-[#f57224] p-8 mb-6 items-center justify-between text-white shadow-sm relative overflow-hidden">
           <div className="space-y-3 relative z-10 max-w-md">
             <span className="bg-white/20 text-white px-3 py-0.5 text-[10px] font-bold uppercase tracking-widest">
               6.6 Mid Year Sale
@@ -126,7 +78,6 @@ const SecoundHomePage = ({ productData }) => {
             alt="Promo"
           />
         </div>
-
         {/* CATEGORY TABS */}
         <div className="flex items-center justify-between mb-4 overflow-x-auto no-scrollbar gap-4 bg-white p-2 shadow-sm">
           <div className="flex gap-2">
@@ -155,7 +106,6 @@ const SecoundHomePage = ({ productData }) => {
             Filter View <FaChevronDown className="-rotate-90" size={10} />
           </button>
         </div>
-
         {/* PRODUCT GRID - Ab storeData ki jagah filteredProducts render hoga */}
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
           {filteredProducts?.length > 0 ? (
@@ -198,7 +148,6 @@ const SecoundHomePage = ({ productData }) => {
             </div>
           )}
         </div>
-
         {/* BOTTOM PAGINATION */}
         {filteredProducts?.length > 0 && (
           <div className="mt-8 flex justify-center">

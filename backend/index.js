@@ -2,12 +2,19 @@ import express from "express";
 import colors from "colors";
 import cors from "cors";
 import dotenv from "dotenv";
+
 import { UserRouter } from "./Routes/UserRoutes/UserRoutes.js";
+
 import { authHandler } from "./middlewares/authHandler.js";
+
 import { ConnectDb } from "./Connection/Connect.js";
+
 import { OrderRoutes } from "./Routes/orderRoutes.js";
+
 import { productRouter } from "./Routes/ProductRouter.js";
+
 import { PaymentRoute } from "./Routes/paymentRouter.js";
+
 import { router } from "./Routes/CategoryRoute.js";
 
 dotenv.config();
